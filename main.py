@@ -9,6 +9,7 @@ from datetime import datetime
 
 from src.workflows.rebalance_workflow import RebalanceWorkflow
 from src.models.decision import DecisionStatus
+from src.agents.sentiment_analyzer_agent import analyze_sentiment_cli
 
 
 def main():
@@ -21,6 +22,8 @@ Examples:
   python main.py --run              Execute one rebalancing workflow cycle
   python main.py --history          Show recent decision history
   python main.py --export decision.json  Export last decision to file
+  python main.py --analyze-sentiment     Analyze sentiment for all portfolio tickers
+  python main.py --analyze-sentiment --tickers AAPL NVDA --days 7  Analyze specific tickers
         """
     )
 
@@ -50,6 +53,32 @@ Examples:
     )
 
     parser.add_argument(
+        '--analyze-sentiment',
+        action='store_true',
+        help='Run sentiment analysis on portfolio tickers (enriches Neo4j)'
+    )
+
+    parser.add_argument(
+        '--tickers',
+        type=str,
+        nargs='+',
+        help='Specific tickers to analyze (default: all portfolio tickers)'
+    )
+
+    parser.add_argument(
+        '--days',
+        type=int,
+        default=30,
+        help='Lookback period for sentiment analysis (default: 30 days)'
+    )
+
+    parser.add_argument(
+        '--force',
+        action='store_true',
+        help='Force re-analysis of articles with existing sentiment'
+    )
+
+    parser.add_argument(
         '--limit',
         type=int,
         default=10,
@@ -58,13 +87,16 @@ Examples:
 
     args = parser.parse_args()
 
-    if not any([args.run, args.monitor, args.history, args.export]):
+    if not any([args.run, args.monitor, args.history, args.export, args.analyze_sentiment]):
         parser.print_help()
         sys.exit(1)
 
     workflow = RebalanceWorkflow()
 
-    if args.run:
+    if args.analyze_sentiment:
+        analyze_sentiment(args.tickers, args.days, args.force)
+
+    elif args.run:
         run_workflow(workflow, args.export)
 
     elif args.history:
@@ -142,6 +174,39 @@ def show_history(workflow: RebalanceWorkflow, limit: int = 10):
         print(f"   Reasoning: {decision.reasoning[:100]}...")
 
     print("\n" + "=" * 80)
+
+
+def analyze_sentiment(tickers: list = None, days: int = 30, force: bool = False):
+    """
+    Run sentiment analysis on portfolio tickers.
+
+    Args:
+        tickers: List of tickers to analyze (None = all portfolio)
+        days: Lookback period
+        force: Force re-analysis
+    """
+    print("\n" + "="*60)
+    print("SENTIMENT ANALYZER - DATA ENRICHMENT MODE")
+    print("="*60)
+    print("\nThis tool analyzes articles and writes sentiment scores")
+    print("back to Neo4j for use by the SentimentExplainerAgent.")
+    print("\nNOTE: MCP write operations not yet implemented in server.")
+    print("Current implementation shows structure only.\n")
+
+    try:
+        results = analyze_sentiment_cli(
+            tickers=tickers, days=days, force=force)
+
+        print("\n✓ Sentiment analysis complete")
+        print(f"Ready to enrich {results.get('analyzed', 0)} articles")
+        print("\nNext steps:")
+        print("1. Implement MCP write operation: write_article_sentiment")
+        print("2. Add Neo4j schema for copilot_sentiment relationship")
+        print("3. Re-run this command to enrich database\n")
+
+    except Exception as e:
+        print(f"\n❌ Error during sentiment analysis: {str(e)}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
