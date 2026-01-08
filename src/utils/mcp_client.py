@@ -1,8 +1,7 @@
 """
 MCP Client wrappers for interacting with yfinance MCP server.
 
-This is a mock client that returns simulated data for testing.
-In production, this would be replaced with actual MCP server calls.
+PRODUCTION IMPLEMENTATION - Makes real calls to MCP yfinance server.
 """
 
 from typing import Dict, List, Optional, Any
@@ -12,20 +11,25 @@ from datetime import datetime
 
 class MCPClient:
     """
-    Wrapper for MCP tool calls to yfinance server.
+    Production MCP client for yfinance server.
 
-    NOTE: This is currently a MOCK implementation that returns simulated data.
-    To use with real MCP server, the workflow needs to be invoked through
-    the MCP function call interface, not direct Python execution.
+    CRITICAL: MCP tools can only be invoked through the AI assistant interface,
+    not from standalone Python scripts. This client raises NotImplementedError
+    to prevent accidental use of mock data in production.
+
+    To use this workflow in production:
+    1. Invoke through AI assistant with MCP access
+    2. Or implement direct MCP SDK connection (requires MCP server endpoint)
+    3. Or use HTTP API if MCP server exposes REST endpoints
     """
 
     def __init__(self):
         """Initialize MCP client."""
-        self.use_mock_data = True
+        self.use_mock_data = False
 
     def query_portfolio_holdings(self, symbol: Optional[str] = None, limit: int = 1) -> List[Dict[str, Any]]:
         """
-        Query portfolio holdings from MongoDB.
+        Query portfolio holdings from MongoDB via MCP server.
 
         Args:
             symbol: Optional ticker symbol to filter
@@ -33,35 +37,20 @@ class MCPClient:
 
         Returns:
             List of portfolio holding documents
+
+        Raises:
+            NotImplementedError: MCP tools must be invoked through assistant interface
         """
-        if not self.use_mock_data:
-            return []
-
-        mock_holdings = [
-            {"ticker": "AAPL", "weight": 0.10, "price": 240.0, "date": "2025-12-10"},
-            {"ticker": "MSFT", "weight": 0.10, "price": 420.0, "date": "2025-12-10"},
-            {"ticker": "GOOGL", "weight": 0.10,
-                "price": 180.0, "date": "2025-12-10"},
-            {"ticker": "NVDA", "weight": 0.08, "price": 880.0, "date": "2025-12-10"},
-            {"ticker": "META", "weight": 0.07, "price": 580.0, "date": "2025-12-10"},
-            {"ticker": "XLK", "weight": 0.10, "price": 220.0, "date": "2025-12-10"},
-            {"ticker": "XOM", "weight": 0.04, "price": 115.0, "date": "2025-12-10"},
-            {"ticker": "CVX", "weight": 0.04, "price": 160.0, "date": "2025-12-10"},
-            {"ticker": "COP", "weight": 0.02, "price": 135.0, "date": "2025-12-10"},
-            {"ticker": "XLE", "weight": 0.02, "price": 95.0, "date": "2025-12-10"},
-            {"ticker": "SPY", "weight": 0.15, "price": 575.0, "date": "2025-12-10"},
-            {"ticker": "QQQ", "weight": 0.13, "price": 480.0, "date": "2025-12-10"},
-            {"ticker": "IWM", "weight": 0.05, "price": 220.0, "date": "2025-12-10"},
-        ]
-
-        if symbol:
-            return [h for h in mock_holdings if h["ticker"] == symbol][:limit]
-        return mock_holdings[:limit] if limit else mock_holdings
+        raise NotImplementedError(
+            "MCP tools cannot be called from standalone Python scripts. "
+            "This workflow must be invoked through the AI assistant interface with MCP access. "
+            "Use: mcp_mcp-yfinance-_query_portfolio_holdings"
+        )
 
     def query_risk_metrics(self, symbol: Optional[str] = None, limit: int = 1,
                            metric_type: Optional[str] = None) -> List[Dict[str, Any]]:
         """
-        Query risk metrics from MongoDB.
+        Query risk metrics from MongoDB via MCP server.
 
         Args:
             symbol: Optional ticker symbol to filter
@@ -70,89 +59,66 @@ class MCPClient:
 
         Returns:
             List of risk metric documents
+
+        Raises:
+            NotImplementedError: MCP tools must be invoked through assistant interface
         """
-        if not self.use_mock_data:
-            return []
-
-        mock_metrics = [
-            {
-                "date": "2025-12-10",
-                "VaR_95": -0.022,
-                "expected_shortfall": -0.028,
-                "Sharpe": 1.8,
-                "beta": 1.05,
-                "volatility": 0.018
-            }
-        ]
-
-        return mock_metrics[:limit]
+        raise NotImplementedError(
+            "MCP tools cannot be called from standalone Python scripts. "
+            "Use: mcp_mcp-yfinance-_query_risk_metrics"
+        )
 
     def get_stock_info(self, symbol: str) -> Dict[str, Any]:
         """
-        Get detailed stock information including current price.
+        Get detailed stock information including current price via MCP server.
 
         Args:
             symbol: Stock ticker symbol
 
         Returns:
             Dictionary with stock info including current price
+
+        Raises:
+            NotImplementedError: MCP tools must be invoked through assistant interface
         """
-        if not self.use_mock_data:
-            return {}
-
-        mock_prices = {
-            "AAPL": 250.0,
-            "MSFT": 425.0,
-            "GOOGL": 175.0,
-            "NVDA": 900.0,
-            "META": 590.0,
-            "XLK": 218.0,
-            "XOM": 116.5,
-            "CVX": 162.0,
-            "COP": 136.0,
-            "XLE": 96.0,
-            "SPY": 580.0,
-            "QQQ": 475.0,
-            "IWM": 218.0,
-        }
-
-        return {
-            "symbol": symbol,
-            "regularMarketPrice": mock_prices.get(symbol, 100.0),
-            "currentPrice": mock_prices.get(symbol, 100.0),
-        }
+        raise NotImplementedError(
+            "MCP tools cannot be called from standalone Python scripts. "
+            "Use: mcp_mcp-yfinance-_get_stock_info"
+        )
 
     def get_portfolio_balance(self) -> Dict[str, Any]:
         """
-        Get current paper trading portfolio balance and positions.
+        Get current paper trading portfolio balance and positions via MCP server.
 
         Returns:
             Dictionary with portfolio balance and positions
-        """
-        if not self.use_mock_data:
-            return {}
 
-        return {
-            "cash": 50000.0,
-            "portfolio_value": 1000000.0,
-            "positions": []
-        }
+        Raises:
+            NotImplementedError: MCP tools must be invoked through assistant interface
+        """
+        raise NotImplementedError(
+            "MCP tools cannot be called from standalone Python scripts. "
+            "Use: mcp_mcp-yfinance-_get_portfolio_balance"
+        )
 
     def list_mongodb_collections(self) -> List[str]:
         """
-        List all collections in MongoDB portfolio_risk database.
+        List all collections in MongoDB portfolio_risk database via MCP server.
 
         Returns:
             List of collection names
-        """
-        if not self.use_mock_data:
-            return []
 
-        return ["portfolio_holdings", "risk_metrics", "prices"]
+        Raises:
+            NotImplementedError: MCP tools must be invoked through assistant interface
+        """
+        raise NotImplementedError(
+            "MCP tools cannot be called from standalone Python scripts. "
+            "MongoDB queries must be made through MCP interface."
+        )
 
     def place_buy_order(self, symbol: str, shares: int) -> Dict[str, Any]:
         """
-        Place a buy order in paper trading account.
+        Place a buy order in paper trading account via MCP server.
 
         Args:
             symbol: Stock ticker symbol
@@ -160,21 +126,18 @@ class MCPClient:
 
         Returns:
             Order result
-        """
-        if not self.use_mock_data:
-            return {}
 
-        return {
-            "status": "success",
-            "symbol": symbol,
-            "shares": shares,
-            "action": "BUY",
-            "message": f"Mock order: BUY {shares} shares of {symbol}"
-        }
+        Raises:
+            NotImplementedError: MCP tools must be invoked through assistant interface
+        """
+        raise NotImplementedError(
+            "MCP tools cannot be called from standalone Python scripts. "
+            "Use: mcp_mcp-yfinance-_place_buy_order"
+        )
 
     def place_sell_order(self, symbol: str, shares: int) -> Dict[str, Any]:
         """
-        Place a sell order in paper trading account.
+        Place a sell order in paper trading account via MCP server.
 
         Args:
             symbol: Stock ticker symbol
@@ -182,14 +145,11 @@ class MCPClient:
 
         Returns:
             Order result
-        """
-        if not self.use_mock_data:
-            return {}
 
-        return {
-            "status": "success",
-            "symbol": symbol,
-            "shares": shares,
-            "action": "SELL",
-            "message": f"Mock order: SELL {shares} shares of {symbol}"
-        }
+        Raises:
+            NotImplementedError: MCP tools must be invoked through assistant interface
+        """
+        raise NotImplementedError(
+            "MCP tools cannot be called from standalone Python scripts. "
+            "Use: mcp_mcp-yfinance-_place_sell_order"
+        )

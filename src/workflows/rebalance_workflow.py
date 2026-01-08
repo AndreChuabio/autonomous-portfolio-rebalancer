@@ -3,12 +3,13 @@ Rebalance Workflow - Orchestrates the 3-phase agentic workflow.
 """
 
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List, Dict
 import json
 
 from src.agents.monitor_agent import MonitorAgent
 from src.agents.analyzer_agent import AnalyzerAgent
 from src.agents.decision_agent import DecisionAgent
+from src.agents.sentiment_explainer_agent import SentimentExplainerAgent
 from src.models.decision import Decision, DecisionLog, DecisionStatus, ScenarioType
 from src.models.portfolio import Portfolio
 from src.utils.mcp_client import MCPClient
@@ -28,6 +29,7 @@ class RebalanceWorkflow:
         self.monitor_agent = MonitorAgent(self.mcp_client)
         self.analyzer_agent = AnalyzerAgent(self.mcp_client)
         self.decision_agent = DecisionAgent()
+        self.sentiment_explainer = SentimentExplainerAgent(self.mcp_client)
         self.decision_log = DecisionLog()
 
     def run_cycle(self) -> Decision:
@@ -70,15 +72,29 @@ class RebalanceWorkflow:
             portfolio
         )
 
+        sentiment_context = None
+        if decision.chosen_scenario and decision.chosen_scenario.adjusted_positions:
+            positions_to_change = self._extract_position_changes(
+                decision.chosen_scenario.adjusted_positions,
+                portfolio
+            )
+
+            if positions_to_change:
+                sentiment_context = self.sentiment_explainer.explain_rebalancing(
+                    positions_to_change,
+                    [p.ticker for p in portfolio.positions]
+                )
+
         self.decision_log.add_decision(decision)
 
         self._print_final_report(
-            decision, monitor_result, analyzer_result, portfolio)
+            decision, monitor_result, analyzer_result, portfolio, sentiment_context)
 
         return decision
 
     def _print_final_report(self, decision: Decision, monitor_result,
-                            analyzer_result, portfolio: Portfolio) -> None:
+                            analyzer_result, portfolio: Portfolio,
+                            sentiment_context=None) -> None:
         """
         Print comprehensive final report.
 
@@ -87,6 +103,7 @@ class RebalanceWorkflow:
             monitor_result: Monitor result
             analyzer_result: Analyzer result
             portfolio: Portfolio state
+            sentiment_context: Optional sentiment explanations
         """
         print("\n" + "=" * 63)
         print("FINAL DECISION REPORT")
@@ -165,10 +182,41 @@ class RebalanceWorkflow:
 
         print(f"\nLogged for Future Adaptation: [{decision.decision_id}]")
 
+        if sentiment_context:
+            sentiment_report = self.sentiment_explainer.format_sentiment_report(
+                sentiment_context)
+            print(sentiment_report)
+
         print("\n" + "=" * 63)
         print(f"AGENT STATUS: {decision.decision_status.value} - "
               f"{'AWAITING EXECUTION' if decision.decision_status == DecisionStatus.EXECUTE else 'MONITORING'}")
         print("=" * 63)
+
+    def _extract_position_changes(self, adjusted_positions: List,
+                                  portfolio: Portfolio) -> Dict[str, float]:
+        """
+        Extract which positions are changing and by how much.
+
+        Args:
+            adjusted_positions: List of adjusted position dicts
+            portfolio: Current portfolio
+
+        Returns:
+            Dict of ticker -> weight_change
+        """
+        changes = {}
+        current_weights = {p.ticker: p.weight for p in portfolio.positions}
+
+        for adj_pos in adjusted_positions:
+            ticker = adj_pos['ticker']
+            new_weight = adj_pos['weight']
+            old_weight = current_weights.get(ticker, 0.0)
+            weight_change = new_weight - old_weight
+
+            if abs(weight_change) > 0.01:
+                changes[ticker] = weight_change
+
+        return changes
 
     def get_decision_history(self, limit: int = 10) -> list:
         """
