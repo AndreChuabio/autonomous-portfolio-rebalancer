@@ -106,7 +106,7 @@ class SentimentAnalyzerAgent:
         Returns:
             Summary of analysis operation
         """
-        print(f"\n🔬 SENTIMENT ANALYZER AGENT")
+        print(f"\n SENTIMENT ANALYZER AGENT")
         print(f"Analyzing articles for {len(tickers)} tickers...")
         print(f"Lookback period: {days} days")
         print(f"Force re-analyze: {force_reanalyze}\n")
