@@ -27,7 +27,9 @@ class MCPClient:
         """Initialize MCP client."""
         self.use_mock_data = False
 
-    def query_portfolio_holdings(self, symbol: Optional[str] = None, limit: int = 1) -> List[Dict[str, Any]]:
+    def query_portfolio_holdings(
+        self, symbol: Optional[str] = None, limit: int = 1
+    ) -> List[Dict[str, Any]]:
         """
         Query portfolio holdings from MongoDB via MCP server.
 
@@ -47,8 +49,12 @@ class MCPClient:
             "Use: mcp_mcp-yfinance-_query_portfolio_holdings"
         )
 
-    def query_risk_metrics(self, symbol: Optional[str] = None, limit: int = 1,
-                           metric_type: Optional[str] = None) -> List[Dict[str, Any]]:
+    def query_risk_metrics(
+        self,
+        symbol: Optional[str] = None,
+        limit: int = 1,
+        metric_type: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
         """
         Query risk metrics from MongoDB via MCP server.
 

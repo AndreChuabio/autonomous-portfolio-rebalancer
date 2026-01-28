@@ -1,7 +1,7 @@
 """
 Sentiment Explainer Agent - Provides news-based context for rebalancing decisions.
 
-Queries Neo4j via MCP to explain WHY positions are being rebalanced based on 
+Queries Neo4j via MCP to explain WHY positions are being rebalanced based on
 recent sentiment and news events.
 """
 
@@ -16,6 +16,7 @@ from src.models.portfolio import Position
 @dataclass
 class SentimentContext:
     """Sentiment context for a ticker."""
+
     ticker: str
     recent_sentiment: float
     sentiment_trend: str  # "improving", "deteriorating", "stable"
@@ -38,8 +39,9 @@ class SentimentExplainerAgent:
         """Initialize Sentiment Explainer Agent with MCP client."""
         self.mcp_client = mcp_client
 
-    def explain_rebalancing(self, positions_to_change: Dict[str, float],
-                            all_tickers: List[str]) -> Dict[str, SentimentContext]:
+    def explain_rebalancing(
+        self, positions_to_change: Dict[str, float], all_tickers: List[str]
+    ) -> Dict[str, SentimentContext]:
         """
         Generate sentiment-based explanations for rebalancing actions.
 
@@ -73,9 +75,7 @@ class SentimentExplainerAgent:
         """
         try:
             articles_data = self.mcp_client.call_tool(
-                "mcp_mcp-yfinance-_get_recent_articles",
-                symbol=ticker,
-                limit=10
+                "mcp_mcp-yfinance-_get_recent_articles", symbol=ticker, limit=10
             )
 
             stats_data = self.mcp_client.call_tool(
@@ -88,12 +88,16 @@ class SentimentExplainerAgent:
 
             key_headlines = self._extract_key_headlines(articles_data, limit=3)
 
-            sentiment_trend = self._determine_trend(
-                sentiment_avg, bearish, bullish)
+            sentiment_trend = self._determine_trend(sentiment_avg, bearish, bullish)
 
             explanation = self._generate_explanation(
-                ticker, sentiment_avg, sentiment_trend,
-                bullish, bearish, neutral, key_headlines
+                ticker,
+                sentiment_avg,
+                sentiment_trend,
+                bullish,
+                bearish,
+                neutral,
+                key_headlines,
             )
 
             return SentimentContext(
@@ -105,7 +109,7 @@ class SentimentExplainerAgent:
                 bearish_count=bearish,
                 bullish_count=bullish,
                 neutral_count=neutral,
-                explanation=explanation
+                explanation=explanation,
             )
 
         except Exception as e:
@@ -114,11 +118,11 @@ class SentimentExplainerAgent:
 
     def _parse_stats(self, stats_data: str, ticker: str) -> tuple:
         """Parse sentiment statistics from MCP response."""
-        lines = stats_data.strip().split('\n')
+        lines = stats_data.strip().split("\n")
 
         for line in lines:
             if ticker in line:
-                parts = line.split('|')
+                parts = line.split("|")
                 if len(parts) >= 7:
                     try:
                         total = int(parts[1].strip())
@@ -135,11 +139,11 @@ class SentimentExplainerAgent:
     def _extract_key_headlines(self, articles_data: str, limit: int = 3) -> List[str]:
         """Extract top headlines from articles data."""
         headlines = []
-        lines = articles_data.split('\n')
+        lines = articles_data.split("\n")
 
         for line in lines:
-            if line.startswith('**') and '**' in line[2:]:
-                headline = line.split('**')[1].strip()
+            if line.startswith("**") and "**" in line[2:]:
+                headline = line.split("**")[1].strip()
                 if headline and len(headline) > 10:
                     headlines.append(headline)
                 if len(headlines) >= limit:
@@ -160,9 +164,16 @@ class SentimentExplainerAgent:
         else:
             return "stable"
 
-    def _generate_explanation(self, ticker: str, sentiment: float, trend: str,
-                              bullish: int, bearish: int, neutral: int,
-                              headlines: List[str]) -> str:
+    def _generate_explanation(
+        self,
+        ticker: str,
+        sentiment: float,
+        trend: str,
+        bullish: int,
+        bearish: int,
+        neutral: int,
+        headlines: List[str],
+    ) -> str:
         """Generate natural language explanation."""
         total = bullish + bearish + neutral
 
@@ -200,7 +211,7 @@ class SentimentExplainerAgent:
             bearish_count=0,
             bullish_count=0,
             neutral_count=0,
-            explanation=f"No sentiment data available for {ticker}."
+            explanation=f"No sentiment data available for {ticker}.",
         )
 
     def format_sentiment_report(self, contexts: Dict[str, SentimentContext]) -> str:
@@ -224,7 +235,9 @@ class SentimentExplainerAgent:
             report += f"\n\n{ticker} ({context.article_count} articles):"
             report += f"\n  Sentiment: {context.recent_sentiment:.3f} ({context.sentiment_trend})"
             report += f"\n  Distribution: {context.bullish_count} bullish, "
-            report += f"{context.bearish_count} bearish, {context.neutral_count} neutral"
+            report += (
+                f"{context.bearish_count} bearish, {context.neutral_count} neutral"
+            )
 
             if context.key_headlines:
                 report += "\n  Recent Headlines:"

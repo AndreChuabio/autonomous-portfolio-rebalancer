@@ -10,6 +10,7 @@ from enum import Enum
 
 class DecisionStatus(Enum):
     """Decision execution status."""
+
     TRIGGER = "TRIGGER"
     MONITORING = "MONITORING"
     ALERT = "ALERT"
@@ -19,6 +20,7 @@ class DecisionStatus(Enum):
 
 class ScenarioType(Enum):
     """Rebalancing scenario types."""
+
     FULL_REBALANCE = "FULL_REBALANCE"
     PARTIAL_REBALANCE = "PARTIAL_REBALANCE"
     SECTOR_REBALANCE = "SECTOR_REBALANCE"
@@ -28,6 +30,7 @@ class ScenarioType(Enum):
 @dataclass
 class Trade:
     """Represents a single trade recommendation."""
+
     ticker: str
     action: str
     shares: int
@@ -44,6 +47,7 @@ class Trade:
 @dataclass
 class Scenario:
     """Represents a rebalancing scenario."""
+
     scenario_type: ScenarioType
     trades: List[Trade] = field(default_factory=list)
     total_capital: float = 0.0
@@ -63,6 +67,7 @@ class Scenario:
 @dataclass
 class MonitorResult:
     """Result from Monitor Agent."""
+
     status: DecisionStatus
     trigger_reason: str
     max_position_drift: float
@@ -84,6 +89,7 @@ class MonitorResult:
 @dataclass
 class AnalyzerResult:
     """Result from Analyzer Agent."""
+
     scenarios: List[Scenario]
     recommended_scenario: Optional[Scenario] = None
     confidence: float = 0.0
@@ -94,6 +100,7 @@ class AnalyzerResult:
 @dataclass
 class Decision:
     """Final decision from Decision Agent."""
+
     decision_id: str
     decision_status: DecisionStatus
     chosen_scenario: Optional[Scenario] = None
@@ -111,9 +118,17 @@ class Decision:
         return {
             "decision_id": self.decision_id,
             "status": self.decision_status.value,
-            "scenario_type": self.chosen_scenario.scenario_type.value if self.chosen_scenario else None,
-            "num_trades": self.chosen_scenario.num_trades if self.chosen_scenario else 0,
-            "total_capital": self.chosen_scenario.total_capital if self.chosen_scenario else 0.0,
+            "scenario_type": (
+                self.chosen_scenario.scenario_type.value
+                if self.chosen_scenario
+                else None
+            ),
+            "num_trades": (
+                self.chosen_scenario.num_trades if self.chosen_scenario else 0
+            ),
+            "total_capital": (
+                self.chosen_scenario.total_capital if self.chosen_scenario else 0.0
+            ),
             "reasoning": self.reasoning,
             "execution_timing": self.execution_timing,
             "confidence": self.confidence,
@@ -124,6 +139,7 @@ class Decision:
 @dataclass
 class DecisionLog:
     """Tracks decision history for learning."""
+
     decisions: List[Decision] = field(default_factory=list)
 
     def add_decision(self, decision: Decision) -> None:

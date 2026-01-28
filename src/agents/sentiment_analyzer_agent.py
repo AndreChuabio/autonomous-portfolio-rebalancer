@@ -2,7 +2,7 @@
 Sentiment Analyzer Agent - Enriches articles with AI-generated sentiment scores.
 
 This agent reads raw articles from Neo4j, analyzes their sentiment using FinBERT
-(financial language model) combined with keyword-based adjustments, and writes 
+(financial language model) combined with keyword-based adjustments, and writes
 the scores back to Neo4j for use by the SentimentExplainerAgent.
 
 Technical Approach:
@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ArticleSentiment:
     """Structured sentiment analysis result."""
+
     score: float  # -1.0 to 1.0
     label: str  # bearish, neutral, bullish
     confidence: float  # 0.0 to 1.0
@@ -67,17 +68,52 @@ class SentimentAnalyzerAgent:
 
         # Financial keyword dictionaries
         self.bearish_keywords = {
-            'falls', 'drops', 'declines', 'losses', 'concerns', 'risks',
-            'challenges', 'competition', 'threatens', 'weakness', 'downturn',
-            'miss', 'below', 'disappoints', 'cuts', 'layoffs', 'restructuring',
-            'litigation', 'investigation', 'scandal', 'breach', 'hack'
+            "falls",
+            "drops",
+            "declines",
+            "losses",
+            "concerns",
+            "risks",
+            "challenges",
+            "competition",
+            "threatens",
+            "weakness",
+            "downturn",
+            "miss",
+            "below",
+            "disappoints",
+            "cuts",
+            "layoffs",
+            "restructuring",
+            "litigation",
+            "investigation",
+            "scandal",
+            "breach",
+            "hack",
         }
 
         self.bullish_keywords = {
-            'gains', 'rises', 'surges', 'growth', 'profits', 'beats',
-            'exceeds', 'strong', 'partnership', 'innovation', 'breakthrough',
-            'expansion', 'acquisition', 'upside', 'momentum', 'record',
-            'upgrade', 'outperform', 'buy', 'positive', 'bullish'
+            "gains",
+            "rises",
+            "surges",
+            "growth",
+            "profits",
+            "beats",
+            "exceeds",
+            "strong",
+            "partnership",
+            "innovation",
+            "breakthrough",
+            "expansion",
+            "acquisition",
+            "upside",
+            "momentum",
+            "record",
+            "upgrade",
+            "outperform",
+            "buy",
+            "positive",
+            "bullish",
         }
 
     def _load_models(self):
@@ -86,15 +122,17 @@ class SentimentAnalyzerAgent:
             print("Loading FinBERT model (first time only)...")
             self._tokenizer = AutoTokenizer.from_pretrained("ProsusAI/finbert")
             self._model = AutoModelForSequenceClassification.from_pretrained(
-                "ProsusAI/finbert")
+                "ProsusAI/finbert"
+            )
             self._model.eval()  # Set to evaluation mode
 
         if self._nlp is None:
             print("Loading spaCy NLP model...")
             self._nlp = spacy.load("en_core_web_sm")
 
-    def analyze_all_tickers(self, tickers: List[str], days: int = 30,
-                            force_reanalyze: bool = False) -> Dict[str, Any]:
+    def analyze_all_tickers(
+        self, tickers: List[str], days: int = 30, force_reanalyze: bool = False
+    ) -> Dict[str, Any]:
         """
         Analyze articles for multiple tickers.
 
@@ -111,17 +149,11 @@ class SentimentAnalyzerAgent:
         print(f"Lookback period: {days} days")
         print(f"Force re-analyze: {force_reanalyze}\n")
 
-        results = {
-            "analyzed": 0,
-            "skipped": 0,
-            "errors": 0,
-            "by_ticker": {}
-        }
+        results = {"analyzed": 0, "skipped": 0, "errors": 0, "by_ticker": {}}
 
         for ticker in tickers:
             try:
-                ticker_result = self.analyze_ticker(
-                    ticker, days, force_reanalyze)
+                ticker_result = self.analyze_ticker(ticker, days, force_reanalyze)
                 results["analyzed"] += ticker_result["analyzed"]
                 results["skipped"] += ticker_result["skipped"]
                 results["by_ticker"][ticker] = ticker_result
@@ -133,8 +165,9 @@ class SentimentAnalyzerAgent:
         self._print_summary(results)
         return results
 
-    def analyze_ticker(self, ticker: str, days: int = 30,
-                       force_reanalyze: bool = False) -> Dict[str, Any]:
+    def analyze_ticker(
+        self, ticker: str, days: int = 30, force_reanalyze: bool = False
+    ) -> Dict[str, Any]:
         """
         Analyze articles for a single ticker.
 
@@ -153,7 +186,7 @@ class SentimentAnalyzerAgent:
             "analyzed": 0,
             "skipped": 0,
             "articles_found": 0,
-            "articles": []
+            "articles": [],
         }
 
         # NOTE: This method will trigger MCP tool calls via Copilot
@@ -222,7 +255,7 @@ class SentimentAnalyzerAgent:
             final_score=final_score,
             finbert_probs=finbert_probs,
             themes=themes,
-            ticker=ticker
+            ticker=ticker,
         )
 
         # Step 7: Assess trading impact
@@ -236,7 +269,7 @@ class SentimentAnalyzerAgent:
             themes=themes,
             trading_impact=trading_impact,
             analyzed_at=datetime.utcnow().isoformat(),
-            analyzed_by="finbert_hybrid"
+            analyzed_by="finbert_hybrid",
         )
 
     def _finbert_analysis(self, text: str) -> tuple[float, list[float]]:
@@ -248,11 +281,7 @@ class SentimentAnalyzerAgent:
         """
         # Tokenize (max 512 tokens for BERT)
         inputs = self._tokenizer(
-            text,
-            return_tensors="pt",
-            truncation=True,
-            max_length=512,
-            padding=True
+            text, return_tensors="pt", truncation=True, max_length=512, padding=True
         )
 
         # Get predictions
@@ -283,10 +312,8 @@ class SentimentAnalyzerAgent:
         text_lower = text.lower()
 
         # Count keyword occurrences
-        bearish_count = sum(
-            1 for word in self.bearish_keywords if word in text_lower)
-        bullish_count = sum(
-            1 for word in self.bullish_keywords if word in text_lower)
+        bearish_count = sum(1 for word in self.bearish_keywords if word in text_lower)
+        bullish_count = sum(1 for word in self.bullish_keywords if word in text_lower)
 
         # Normalize to -1 to +1
         total = bearish_count + bullish_count
@@ -308,21 +335,26 @@ class SentimentAnalyzerAgent:
 
         # Extract named entities
         for ent in doc.ents:
-            if ent.label_ in ['ORG', 'PRODUCT', 'EVENT', 'GPE']:
+            if ent.label_ in ["ORG", "PRODUCT", "EVENT", "GPE"]:
                 themes.add(ent.text.lower())
 
         # Add financial themes based on keywords
         text_lower = text.lower()
 
         theme_keywords = {
-            'earnings': ['earnings', 'revenue', 'profit', 'eps'],
-            'competition': ['competition', 'competitor', 'market share', 'rival'],
-            'ai_technology': ['ai', 'artificial intelligence', 'machine learning', 'automation'],
-            'regulation': ['regulation', 'sec', 'investigation', 'lawsuit'],
-            'expansion': ['acquisition', 'merger', 'expansion', 'growth'],
-            'product_launch': ['launch', 'release', 'unveil', 'announce'],
-            'leadership': ['ceo', 'executive', 'management', 'leadership'],
-            'market_performance': ['market cap', 'stock price', 'valuation', 'shares']
+            "earnings": ["earnings", "revenue", "profit", "eps"],
+            "competition": ["competition", "competitor", "market share", "rival"],
+            "ai_technology": [
+                "ai",
+                "artificial intelligence",
+                "machine learning",
+                "automation",
+            ],
+            "regulation": ["regulation", "sec", "investigation", "lawsuit"],
+            "expansion": ["acquisition", "merger", "expansion", "growth"],
+            "product_launch": ["launch", "release", "unveil", "announce"],
+            "leadership": ["ceo", "executive", "management", "leadership"],
+            "market_performance": ["market cap", "stock price", "valuation", "shares"],
         }
 
         for theme, keywords in theme_keywords.items():
@@ -340,9 +372,15 @@ class SentimentAnalyzerAgent:
         else:
             return "neutral"
 
-    def _generate_reasoning(self, finbert_score: float, keyword_score: float,
-                            final_score: float, finbert_probs: list[float],
-                            themes: List[str], ticker: str) -> str:
+    def _generate_reasoning(
+        self,
+        finbert_score: float,
+        keyword_score: float,
+        final_score: float,
+        finbert_probs: list[float],
+        themes: List[str],
+        ticker: str,
+    ) -> str:
         """
         Generate human-readable reasoning for the sentiment score.
 
@@ -394,8 +432,8 @@ class SentimentAnalyzerAgent:
             base = "bearish"
 
         # Adjust for specific themes
-        long_term_themes = {'ai_technology', 'expansion', 'product_launch'}
-        short_term_themes = {'earnings', 'market_performance', 'regulation'}
+        long_term_themes = {"ai_technology", "expansion", "product_launch"}
+        short_term_themes = {"earnings", "market_performance", "regulation"}
 
         has_long_term = any(theme in long_term_themes for theme in themes)
         has_short_term = any(theme in short_term_themes for theme in themes)
@@ -409,9 +447,9 @@ class SentimentAnalyzerAgent:
 
     def _print_summary(self, results: Dict[str, Any]):
         """Print analysis summary."""
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print(" SENTIMENT ANALYSIS SUMMARY")
-        print("="*60)
+        print("=" * 60)
         print(f"Total analyzed: {results['analyzed']}")
         print(f"Total skipped (already analyzed): {results['skipped']}")
         print(f"Errors: {results['errors']}")
@@ -423,12 +461,12 @@ class SentimentAnalyzerAgent:
                 analyzed = ticker_result.get("analyzed", 0)
                 skipped = ticker_result.get("skipped", 0)
                 print(f"  {ticker}: ✓ {analyzed} analyzed, {skipped} skipped")
-        print("="*60 + "\n")
+        print("=" * 60 + "\n")
 
 
-def analyze_sentiment_cli(tickers: Optional[List[str]] = None,
-                          days: int = 30,
-                          force: bool = False):
+def analyze_sentiment_cli(
+    tickers: Optional[List[str]] = None, days: int = 30, force: bool = False
+):
     """
     CLI entry point for sentiment analysis.
 
@@ -442,15 +480,24 @@ def analyze_sentiment_cli(tickers: Optional[List[str]] = None,
     # Default to portfolio tickers if none specified
     if tickers is None:
         tickers = [
-            "AAPL", "MSFT", "GOOGL", "NVDA", "META", "XLK",
-            "XOM", "CVX", "COP", "XLE",
-            "SPY", "QQQ", "IWM"
+            "AAPL",
+            "MSFT",
+            "GOOGL",
+            "NVDA",
+            "META",
+            "XLK",
+            "XOM",
+            "CVX",
+            "COP",
+            "XLE",
+            "SPY",
+            "QQQ",
+            "IWM",
         ]
 
     mcp_client = MCPClient()
     analyzer = SentimentAnalyzerAgent(mcp_client)
 
-    results = analyzer.analyze_all_tickers(
-        tickers, days=days, force_reanalyze=force)
+    results = analyzer.analyze_all_tickers(tickers, days=days, force_reanalyze=force)
 
     return results

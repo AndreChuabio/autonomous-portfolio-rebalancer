@@ -8,7 +8,11 @@ from datetime import datetime
 
 from src.models.portfolio import Portfolio, Position
 from src.models.decision import (
-    Scenario, ScenarioType, Trade, AnalyzerResult, MonitorResult
+    Scenario,
+    ScenarioType,
+    Trade,
+    AnalyzerResult,
+    MonitorResult,
 )
 from src.utils.mcp_client import MCPClient
 from src.utils.calculations import calculate_rebalancing_trades
@@ -18,7 +22,7 @@ from config.settings import (
     DRIFT_THRESHOLD_CRITICAL,
     DRIFT_THRESHOLD_HIGH,
     DRIFT_THRESHOLD_MEDIUM,
-    MAX_TURNOVER_RATIO
+    MAX_TURNOVER_RATIO,
 )
 
 
@@ -39,8 +43,9 @@ class AnalyzerAgent:
         """
         self.mcp_client = mcp_client
 
-    def evaluate_scenarios(self, monitor_result: MonitorResult,
-                           portfolio: Portfolio) -> AnalyzerResult:
+    def evaluate_scenarios(
+        self, monitor_result: MonitorResult, portfolio: Portfolio
+    ) -> AnalyzerResult:
         """
         Evaluate multiple rebalancing scenarios.
 
@@ -58,36 +63,44 @@ class AnalyzerAgent:
 
         scenario_full = self._evaluate_full_rebalance(portfolio)
         scenarios.append(scenario_full)
-        print(f"Full Rebalance: {scenario_full.num_trades} trades, "
-              f"${scenario_full.total_capital:,.0f}, Score: {scenario_full.score:.1f}/10")
+        print(
+            f"Full Rebalance: {scenario_full.num_trades} trades, "
+            f"${scenario_full.total_capital:,.0f}, Score: {scenario_full.score:.1f}/10"
+        )
 
         scenario_partial = self._evaluate_partial_rebalance(portfolio)
         scenarios.append(scenario_partial)
-        print(f"Partial Rebalance: {scenario_partial.num_trades} trades, "
-              f"${scenario_partial.total_capital:,.0f}, Score: {scenario_partial.score:.1f}/10")
+        print(
+            f"Partial Rebalance: {scenario_partial.num_trades} trades, "
+            f"${scenario_partial.total_capital:,.0f}, Score: {scenario_partial.score:.1f}/10"
+        )
 
         scenario_sector = self._evaluate_sector_rebalance(portfolio)
         scenarios.append(scenario_sector)
-        print(f"Sector Rebalance: {scenario_sector.num_trades} trades, "
-              f"${scenario_sector.total_capital:,.0f}, Score: {scenario_sector.score:.1f}/10")
+        print(
+            f"Sector Rebalance: {scenario_sector.num_trades} trades, "
+            f"${scenario_sector.total_capital:,.0f}, Score: {scenario_sector.score:.1f}/10"
+        )
 
         scenario_defer = self._evaluate_defer(portfolio, monitor_result)
         scenarios.append(scenario_defer)
-        print(f"Defer: {scenario_defer.num_trades} trades, "
-              f"Score: {scenario_defer.score:.1f}/10")
+        print(
+            f"Defer: {scenario_defer.num_trades} trades, "
+            f"Score: {scenario_defer.score:.1f}/10"
+        )
 
         recommended = self._select_best_scenario(scenarios, monitor_result)
-        confidence = self._calculate_confidence(
-            recommended, scenarios, monitor_result)
+        confidence = self._calculate_confidence(recommended, scenarios, monitor_result)
 
         print(
-            f"\nRecommended: {recommended.scenario_type.value} (Confidence: {confidence:.0%})")
+            f"\nRecommended: {recommended.scenario_type.value} (Confidence: {confidence:.0%})"
+        )
 
         return AnalyzerResult(
             scenarios=scenarios,
             recommended_scenario=recommended,
             confidence=confidence,
-            market_regime=monitor_result.market_regime
+            market_regime=monitor_result.market_regime,
         )
 
     def _evaluate_full_rebalance(self, portfolio: Portfolio) -> Scenario:
@@ -103,15 +116,12 @@ class AnalyzerAgent:
         trades = []
 
         current_weights = {
-            p.ticker: p.current_weight for p in portfolio.positions.values()}
-        live_prices = {
-            p.ticker: p.live_price for p in portfolio.positions.values()}
+            p.ticker: p.current_weight for p in portfolio.positions.values()
+        }
+        live_prices = {p.ticker: p.live_price for p in portfolio.positions.values()}
 
         trade_dict = calculate_rebalancing_trades(
-            current_weights,
-            TARGET_ALLOCATION,
-            live_prices,
-            PORTFOLIO_BASIS
+            current_weights, TARGET_ALLOCATION, live_prices, PORTFOLIO_BASIS
         )
 
         for ticker, trade_data in trade_dict.items():
@@ -127,7 +137,7 @@ class AnalyzerAgent:
                 drift=trade_data["drift"],
                 priority=trade_data["priority"],
                 sector=position.sector if position else "",
-                rationale=f"Full rebalance to target {trade_data['target_weight']:.1%}"
+                rationale=f"Full rebalance to target {trade_data['target_weight']:.1%}",
             )
             trades.append(trade)
 
@@ -145,7 +155,7 @@ class AnalyzerAgent:
             expected_sharpe_impact=0.05,
             expected_var_impact=-0.002,
             score=score,
-            tradeoffs="High turnover, immediate correction, risk-neutral"
+            tradeoffs="High turnover, immediate correction, risk-neutral",
         )
 
     def _evaluate_partial_rebalance(self, portfolio: Portfolio) -> Scenario:
@@ -161,18 +171,16 @@ class AnalyzerAgent:
         trades = []
 
         positions_high_drift = portfolio.get_positions_by_drift(
-            min_drift=DRIFT_THRESHOLD_MEDIUM)
+            min_drift=DRIFT_THRESHOLD_MEDIUM
+        )
 
         current_weights = {
-            p.ticker: p.current_weight for p in portfolio.positions.values()}
-        live_prices = {
-            p.ticker: p.live_price for p in portfolio.positions.values()}
+            p.ticker: p.current_weight for p in portfolio.positions.values()
+        }
+        live_prices = {p.ticker: p.live_price for p in portfolio.positions.values()}
 
         trade_dict = calculate_rebalancing_trades(
-            current_weights,
-            TARGET_ALLOCATION,
-            live_prices,
-            PORTFOLIO_BASIS
+            current_weights, TARGET_ALLOCATION, live_prices, PORTFOLIO_BASIS
         )
 
         for position in positions_high_drift:
@@ -189,19 +197,25 @@ class AnalyzerAgent:
                     drift=trade_data["drift"],
                     priority=trade_data["priority"],
                     sector=position.sector,
-                    rationale=f"Drift {position.drift:.1%} exceeds threshold"
+                    rationale=f"Drift {position.drift:.1%} exceeds threshold",
                 )
                 trades.append(trade)
 
         total_capital = sum(t.value for t in trades)
         num_trades = len(trades)
 
-        remaining_max_drift = max([p.drift for p in portfolio.positions.values()
-                                  if p.ticker not in [t.ticker for t in trades]],
-                                  default=0.0)
+        remaining_max_drift = max(
+            [
+                p.drift
+                for p in portfolio.positions.values()
+                if p.ticker not in [t.ticker for t in trades]
+            ],
+            default=0.0,
+        )
 
         score = self._score_partial_rebalance(
-            num_trades, total_capital, remaining_max_drift)
+            num_trades, total_capital, remaining_max_drift
+        )
 
         return Scenario(
             scenario_type=ScenarioType.PARTIAL_REBALANCE,
@@ -212,7 +226,7 @@ class AnalyzerAgent:
             expected_sharpe_impact=0.02,
             expected_var_impact=-0.001,
             score=score,
-            tradeoffs="Lower cost, incomplete fix, addresses worst offenders"
+            tradeoffs="Lower cost, incomplete fix, addresses worst offenders",
         )
 
     def _evaluate_sector_rebalance(self, portfolio: Portfolio) -> Scenario:
@@ -228,15 +242,12 @@ class AnalyzerAgent:
         trades = []
 
         current_weights = {
-            p.ticker: p.current_weight for p in portfolio.positions.values()}
-        live_prices = {
-            p.ticker: p.live_price for p in portfolio.positions.values()}
+            p.ticker: p.current_weight for p in portfolio.positions.values()
+        }
+        live_prices = {p.ticker: p.live_price for p in portfolio.positions.values()}
 
         trade_dict = calculate_rebalancing_trades(
-            current_weights,
-            TARGET_ALLOCATION,
-            live_prices,
-            PORTFOLIO_BASIS
+            current_weights, TARGET_ALLOCATION, live_prices, PORTFOLIO_BASIS
         )
 
         sector_etfs = ["XLK", "XLE", "SPY", "QQQ", "IWM"]
@@ -256,7 +267,7 @@ class AnalyzerAgent:
                     drift=trade_data["drift"],
                     priority=trade_data["priority"],
                     sector=position.sector if position else "",
-                    rationale="Sector allocation rebalance"
+                    rationale="Sector allocation rebalance",
                 )
                 trades.append(trade)
 
@@ -274,11 +285,12 @@ class AnalyzerAgent:
             expected_sharpe_impact=0.01,
             expected_var_impact=0.0,
             score=score,
-            tradeoffs="Maintains stock picks, corrects macro allocation"
+            tradeoffs="Maintains stock picks, corrects macro allocation",
         )
 
-    def _evaluate_defer(self, portfolio: Portfolio,
-                        monitor_result: MonitorResult) -> Scenario:
+    def _evaluate_defer(
+        self, portfolio: Portfolio, monitor_result: MonitorResult
+    ) -> Scenario:
         """
         Evaluate defer scenario - wait and see.
 
@@ -300,7 +312,7 @@ class AnalyzerAgent:
             expected_sharpe_impact=0.0,
             expected_var_impact=0.0,
             score=score,
-            tradeoffs="Drift continues, avoid trading into volatility"
+            tradeoffs="Drift continues, avoid trading into volatility",
         )
 
     def _score_full_rebalance(self, num_trades: int, total_capital: float) -> float:
@@ -312,8 +324,9 @@ class AnalyzerAgent:
 
         return 7.0 - (num_trades * 0.1)
 
-    def _score_partial_rebalance(self, num_trades: int, total_capital: float,
-                                 remaining_drift: float) -> float:
+    def _score_partial_rebalance(
+        self, num_trades: int, total_capital: float, remaining_drift: float
+    ) -> float:
         """Score partial rebalance scenario."""
         turnover = total_capital / PORTFOLIO_BASIS
 
@@ -342,8 +355,9 @@ class AnalyzerAgent:
         else:
             return 5.0
 
-    def _select_best_scenario(self, scenarios: List[Scenario],
-                              monitor_result: MonitorResult) -> Scenario:
+    def _select_best_scenario(
+        self, scenarios: List[Scenario], monitor_result: MonitorResult
+    ) -> Scenario:
         """
         Select best scenario based on scores and conditions.
 
@@ -355,15 +369,17 @@ class AnalyzerAgent:
             Best scenario
         """
         if monitor_result.market_regime == "CRISIS":
-            defer = next(s for s in scenarios if s.scenario_type ==
-                         ScenarioType.DEFER)
+            defer = next(s for s in scenarios if s.scenario_type == ScenarioType.DEFER)
             return defer
 
         return max(scenarios, key=lambda s: s.score)
 
-    def _calculate_confidence(self, recommended: Scenario,
-                              all_scenarios: List[Scenario],
-                              monitor_result: MonitorResult) -> float:
+    def _calculate_confidence(
+        self,
+        recommended: Scenario,
+        all_scenarios: List[Scenario],
+        monitor_result: MonitorResult,
+    ) -> float:
         """
         Calculate confidence in recommendation.
 

@@ -1,6 +1,7 @@
 """
 Pytest configuration and shared fixtures.
 """
+
 import pytest
 from datetime import datetime
 from src.models.portfolio import Portfolio, Position, RiskMetrics
@@ -13,31 +14,35 @@ def sample_portfolio():
     portfolio = Portfolio(
         portfolio_id="TEST_PORTFOLIO",
         total_value=1000000.0,
-        timestamp=datetime.utcnow()
+        timestamp=datetime.utcnow(),
     )
-    
-    portfolio.add_position(Position(
-        ticker="AAPL",
-        target_weight=0.10,
-        current_weight=0.12,
-        drift=0.02,
-        current_value=120000.0,
-        target_value=100000.0,
-        shares=400,
-        price=300.0
-    ))
-    
-    portfolio.add_position(Position(
-        ticker="NVDA",
-        target_weight=0.08,
-        current_weight=0.06,
-        drift=-0.02,
-        current_value=60000.0,
-        target_value=80000.0,
-        shares=300,
-        price=200.0
-    ))
-    
+
+    portfolio.add_position(
+        Position(
+            ticker="AAPL",
+            target_weight=0.10,
+            current_weight=0.12,
+            drift=0.02,
+            current_value=120000.0,
+            target_value=100000.0,
+            shares=400,
+            price=300.0,
+        )
+    )
+
+    portfolio.add_position(
+        Position(
+            ticker="NVDA",
+            target_weight=0.08,
+            current_weight=0.06,
+            drift=-0.02,
+            current_value=60000.0,
+            target_value=80000.0,
+            shares=300,
+            price=200.0,
+        )
+    )
+
     return portfolio
 
 
@@ -49,7 +54,7 @@ def sample_risk_metrics():
         sharpe_ratio=2.0,
         beta=1.2,
         volatility=0.15,
-        timestamp=datetime.utcnow()
+        timestamp=datetime.utcnow(),
     )
 
 
@@ -63,7 +68,7 @@ def sample_scenario():
             shares=50,
             value=-15000.0,
             priority="HIGH",
-            rationale="2% overweight"
+            rationale="2% overweight",
         ),
         Trade(
             ticker="NVDA",
@@ -71,10 +76,10 @@ def sample_scenario():
             shares=100,
             value=20000.0,
             priority="HIGH",
-            rationale="2% underweight"
-        )
+            rationale="2% underweight",
+        ),
     ]
-    
+
     return Scenario(
         scenario_type=ScenarioType.PARTIAL_REBALANCE,
         trades=trades,
@@ -83,7 +88,7 @@ def sample_scenario():
         turnover_pct=0.035,
         max_position_drift_after=0.01,
         score=8.5,
-        reasoning="Fix high-drift positions efficiently"
+        reasoning="Fix high-drift positions efficiently",
     )
 
 
@@ -91,26 +96,26 @@ def sample_scenario():
 def mock_mcp_client(mocker):
     """Create a mock MCP client."""
     client = mocker.MagicMock()
-    
+
     # Mock portfolio holdings response
     client.query_portfolio_holdings.return_value = {
         "portfolio_id": "TEST_PORTFOLIO",
         "total_value": 1000000.0,
         "positions": [
             {"ticker": "AAPL", "shares": 400, "value": 120000.0},
-            {"ticker": "NVDA", "shares": 300, "value": 60000.0}
-        ]
+            {"ticker": "NVDA", "shares": 300, "value": 60000.0},
+        ],
     }
-    
+
     # Mock risk metrics response
     client.query_risk_metrics.return_value = {
         "var_95": -1.5,
         "sharpe_ratio": 2.0,
         "beta": 1.2,
-        "volatility": 0.15
+        "volatility": 0.15,
     }
-    
+
     # Mock stock info response
     client.get_stock_info.return_value = {"regularMarketPrice": 300.0}
-    
+
     return client

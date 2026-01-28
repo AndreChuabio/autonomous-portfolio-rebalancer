@@ -10,6 +10,7 @@ from datetime import datetime
 @dataclass
 class Position:
     """Represents a single portfolio position."""
+
     ticker: str
     target_weight: float
     current_weight: float = 0.0
@@ -25,6 +26,7 @@ class Position:
 @dataclass
 class Portfolio:
     """Represents the complete portfolio state."""
+
     portfolio_id: str
     total_value: float
     positions: Dict[str, Position] = field(default_factory=dict)
@@ -43,8 +45,7 @@ class Portfolio:
         """Get ticker and value of maximum drift."""
         if not self.positions:
             return "", 0.0
-        max_ticker = max(self.positions.keys(),
-                         key=lambda t: self.positions[t].drift)
+        max_ticker = max(self.positions.keys(), key=lambda t: self.positions[t].drift)
         return max_ticker, self.positions[max_ticker].drift
 
     def get_sector_weights(self) -> Dict[str, float]:
@@ -53,8 +54,7 @@ class Portfolio:
         for position in self.positions.values():
             if position.sector:
                 sector_weights[position.sector] = (
-                    sector_weights.get(position.sector, 0.0) +
-                    position.current_weight
+                    sector_weights.get(position.sector, 0.0) + position.current_weight
                 )
         return sector_weights
 
@@ -67,6 +67,7 @@ class Portfolio:
 @dataclass
 class RiskMetrics:
     """Represents portfolio risk metrics."""
+
     date: datetime
     var_95: float
     expected_shortfall: float
@@ -74,7 +75,8 @@ class RiskMetrics:
     beta: float
     volatility: float
 
-    def is_high_risk(self, var_threshold: float = -0.03,
-                     sharpe_threshold: float = 1.0) -> bool:
+    def is_high_risk(
+        self, var_threshold: float = -0.03, sharpe_threshold: float = 1.0
+    ) -> bool:
         """Check if portfolio is in high risk state."""
         return self.var_95 < var_threshold or self.sharpe_ratio < sharpe_threshold

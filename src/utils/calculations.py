@@ -6,8 +6,9 @@ from typing import Dict, List, Tuple
 from config.settings import TARGET_ALLOCATION, SECTOR_MAPPING, SECTOR_ALLOCATION
 
 
-def calculate_weight_drift(current_weights: Dict[str, float],
-                           target_weights: Dict[str, float]) -> Dict[str, float]:
+def calculate_weight_drift(
+    current_weights: Dict[str, float], target_weights: Dict[str, float]
+) -> Dict[str, float]:
     """
     Calculate drift between current and target weights.
 
@@ -44,8 +45,9 @@ def calculate_sector_weights(position_weights: Dict[str, float]) -> Dict[str, fl
     return sector_weights
 
 
-def calculate_sector_drift(current_sector_weights: Dict[str, float],
-                           target_sector_weights: Dict[str, float]) -> Dict[str, float]:
+def calculate_sector_drift(
+    current_sector_weights: Dict[str, float], target_sector_weights: Dict[str, float]
+) -> Dict[str, float]:
     """
     Calculate drift between current and target sector weights.
 
@@ -64,8 +66,9 @@ def calculate_sector_drift(current_sector_weights: Dict[str, float],
     return drift
 
 
-def calculate_implied_weights(target_weights: Dict[str, float],
-                              price_changes: Dict[str, float]) -> Dict[str, float]:
+def calculate_implied_weights(
+    target_weights: Dict[str, float], price_changes: Dict[str, float]
+) -> Dict[str, float]:
     """
     Calculate implied current weights based on price changes.
 
@@ -85,16 +88,17 @@ def calculate_implied_weights(target_weights: Dict[str, float],
 
     implied_weights = {}
     for ticker, value in weighted_values.items():
-        implied_weights[ticker] = value / \
-            total_value if total_value > 0 else 0.0
+        implied_weights[ticker] = value / total_value if total_value > 0 else 0.0
 
     return implied_weights
 
 
-def calculate_rebalancing_trades(current_weights: Dict[str, float],
-                                 target_weights: Dict[str, float],
-                                 live_prices: Dict[str, float],
-                                 portfolio_value: float) -> Dict[str, Dict]:
+def calculate_rebalancing_trades(
+    current_weights: Dict[str, float],
+    target_weights: Dict[str, float],
+    live_prices: Dict[str, float],
+    portfolio_value: float,
+) -> Dict[str, Dict]:
     """
     Calculate rebalancing trades needed.
 
@@ -131,7 +135,7 @@ def calculate_rebalancing_trades(current_weights: Dict[str, float],
                     "action": "BUY" if shares_to_trade > 0 else "SELL",
                     "trade_value": abs(trade_value),
                     "price": live_price,
-                    "priority": get_trade_priority(drift)
+                    "priority": get_trade_priority(drift),
                 }
 
     return trades

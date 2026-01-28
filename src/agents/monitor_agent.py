@@ -14,7 +14,7 @@ from src.utils.calculations import (
     calculate_weight_drift,
     calculate_sector_weights,
     calculate_sector_drift,
-    classify_market_regime
+    classify_market_regime,
 )
 from config.settings import (
     TARGET_ALLOCATION,
@@ -23,7 +23,7 @@ from config.settings import (
     PORTFOLIO_BASIS,
     DRIFT_THRESHOLD_CRITICAL,
     VAR_THRESHOLD_WARNING,
-    SHARPE_THRESHOLD_WARNING
+    SHARPE_THRESHOLD_WARNING,
 )
 
 
@@ -60,32 +60,26 @@ class MonitorAgent:
         max_position_ticker, max_position_drift = portfolio.get_max_drift()
 
         sector_weights = portfolio.get_sector_weights()
-        sector_drift = calculate_sector_drift(
-            sector_weights, SECTOR_ALLOCATION)
-        max_sector = max(sector_drift.keys(),
-                         key=lambda s: sector_drift[s]) if sector_drift else ""
+        sector_drift = calculate_sector_drift(sector_weights, SECTOR_ALLOCATION)
+        max_sector = (
+            max(sector_drift.keys(), key=lambda s: sector_drift[s])
+            if sector_drift
+            else ""
+        )
         max_sector_drift = sector_drift.get(max_sector, 0.0)
 
         market_regime = classify_market_regime(
-            risk_metrics.sharpe_ratio,
-            risk_metrics.var_95
+            risk_metrics.sharpe_ratio, risk_metrics.var_95
         )
 
         days_since_rebalance = self._estimate_days_since_rebalance(portfolio)
 
         status = self._determine_status(
-            max_position_drift,
-            max_sector_drift,
-            risk_metrics,
-            market_regime
+            max_position_drift, max_sector_drift, risk_metrics, market_regime
         )
 
         trigger_reason = self._generate_trigger_reason(
-            status,
-            max_position_drift,
-            max_sector_drift,
-            risk_metrics,
-            market_regime
+            status, max_position_drift, max_sector_drift, risk_metrics, market_regime
         )
 
         result = MonitorResult(
@@ -99,15 +93,14 @@ class MonitorAgent:
             sharpe_ratio=risk_metrics.sharpe_ratio,
             beta=risk_metrics.beta,
             market_regime=market_regime,
-            days_since_rebalance=days_since_rebalance
+            days_since_rebalance=days_since_rebalance,
         )
 
         self.last_assessment_time = datetime.now()
 
         print(f"Status: {status.value}")
         print(f"Trigger Reason: {trigger_reason}")
-        print(
-            f"Max Position Drift: {max_position_drift:.2%} ({max_position_ticker})")
+        print(f"Max Position Drift: {max_position_drift:.2%} ({max_position_ticker})")
         print(f"Max Sector Drift: {max_sector_drift:.2%} ({max_sector})")
         print(f"Market Regime: {market_regime}")
 
@@ -124,8 +117,7 @@ class MonitorAgent:
         holdings = self.mcp_client.query_portfolio_holdings(limit=100)
 
         portfolio = Portfolio(
-            portfolio_id="PORT_A_TechGrowth",
-            total_value=PORTFOLIO_BASIS
+            portfolio_id="PORT_A_TechGrowth", total_value=PORTFOLIO_BASIS
         )
 
         price_changes = {}
@@ -149,8 +141,7 @@ class MonitorAgent:
             else:
                 price_changes[ticker] = 0.0
 
-        implied_weights = calculate_implied_weights(
-            TARGET_ALLOCATION, price_changes)
+        implied_weights = calculate_implied_weights(TARGET_ALLOCATION, price_changes)
         drift = calculate_weight_drift(implied_weights, TARGET_ALLOCATION)
 
         for ticker, target_weight in TARGET_ALLOCATION.items():
@@ -162,7 +153,7 @@ class MonitorAgent:
                 live_price=live_prices.get(ticker, 0.0),
                 drift=drift.get(ticker, 0.0),
                 sector=SECTOR_MAPPING.get(ticker, ""),
-                value=PORTFOLIO_BASIS * implied_weights.get(ticker, 0.0)
+                value=PORTFOLIO_BASIS * implied_weights.get(ticker, 0.0),
             )
             portfolio.add_position(position)
 
@@ -186,7 +177,7 @@ class MonitorAgent:
                 expected_shortfall=metric.get("expected_shortfall", -0.03),
                 sharpe_ratio=metric.get("Sharpe", 1.5),
                 beta=metric.get("beta", 1.0),
-                volatility=metric.get("volatility", 0.015)
+                volatility=metric.get("volatility", 0.015),
             )
         else:
             return RiskMetrics(
@@ -195,7 +186,7 @@ class MonitorAgent:
                 expected_shortfall=-0.03,
                 sharpe_ratio=1.5,
                 beta=1.0,
-                volatility=0.015
+                volatility=0.015,
             )
 
     def _get_stored_price(self, holdings: list, ticker: str) -> float:
@@ -211,8 +202,13 @@ class MonitorAgent:
             return (datetime.now() - portfolio.last_rebalance_date).days
         return 7
 
-    def _determine_status(self, max_position_drift: float, max_sector_drift: float,
-                          risk_metrics: RiskMetrics, market_regime: str) -> DecisionStatus:
+    def _determine_status(
+        self,
+        max_position_drift: float,
+        max_sector_drift: float,
+        risk_metrics: RiskMetrics,
+        market_regime: str,
+    ) -> DecisionStatus:
         """
         Determine monitor status based on metrics.
 
@@ -225,26 +221,33 @@ class MonitorAgent:
         Returns:
             DecisionStatus
         """
-        if (max_position_drift >= DRIFT_THRESHOLD_CRITICAL or
-            max_sector_drift >= 0.05 or
-            risk_metrics.var_95 < VAR_THRESHOLD_WARNING or
-            risk_metrics.sharpe_ratio < SHARPE_THRESHOLD_WARNING or
-                market_regime == "CRISIS"):
+        if (
+            max_position_drift >= DRIFT_THRESHOLD_CRITICAL
+            or max_sector_drift >= 0.05
+            or risk_metrics.var_95 < VAR_THRESHOLD_WARNING
+            or risk_metrics.sharpe_ratio < SHARPE_THRESHOLD_WARNING
+            or market_regime == "CRISIS"
+        ):
             return DecisionStatus.TRIGGER
 
-        elif (max_position_drift >= 0.02 or
-              max_sector_drift >= 0.03 or
-              risk_metrics.var_95 < -0.025):
+        elif (
+            max_position_drift >= 0.02
+            or max_sector_drift >= 0.03
+            or risk_metrics.var_95 < -0.025
+        ):
             return DecisionStatus.ALERT
 
         else:
             return DecisionStatus.MONITORING
 
-    def _generate_trigger_reason(self, status: DecisionStatus,
-                                 max_position_drift: float,
-                                 max_sector_drift: float,
-                                 risk_metrics: RiskMetrics,
-                                 market_regime: str) -> str:
+    def _generate_trigger_reason(
+        self,
+        status: DecisionStatus,
+        max_position_drift: float,
+        max_sector_drift: float,
+        risk_metrics: RiskMetrics,
+        market_regime: str,
+    ) -> str:
         """Generate human-readable trigger reason."""
         if status == DecisionStatus.MONITORING:
             return "All metrics within normal ranges"
@@ -253,19 +256,19 @@ class MonitorAgent:
 
         if max_position_drift >= DRIFT_THRESHOLD_CRITICAL:
             reasons.append(
-                f"Max drift {max_position_drift:.1%} exceeds {DRIFT_THRESHOLD_CRITICAL:.1%} threshold")
+                f"Max drift {max_position_drift:.1%} exceeds {DRIFT_THRESHOLD_CRITICAL:.1%} threshold"
+            )
 
         if max_sector_drift >= 0.05:
-            reasons.append(
-                f"Sector drift {max_sector_drift:.1%} exceeds 5% threshold")
+            reasons.append(f"Sector drift {max_sector_drift:.1%} exceeds 5% threshold")
 
         if risk_metrics.var_95 < VAR_THRESHOLD_WARNING:
-            reasons.append(
-                f"VaR {risk_metrics.var_95:.2%} below warning threshold")
+            reasons.append(f"VaR {risk_metrics.var_95:.2%} below warning threshold")
 
         if risk_metrics.sharpe_ratio < SHARPE_THRESHOLD_WARNING:
             reasons.append(
-                f"Sharpe {risk_metrics.sharpe_ratio:.2f} below warning threshold")
+                f"Sharpe {risk_metrics.sharpe_ratio:.2f} below warning threshold"
+            )
 
         if market_regime == "CRISIS":
             reasons.append("Crisis market regime detected")
