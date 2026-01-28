@@ -12,10 +12,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 
 # Install Python dependencies
-# Note: torch is large (~2GB), consider using CPU-only version for smaller image
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Download spaCy English model
+# Download spaCy English model for sentiment analysis
 RUN python -m spacy download en_core_web_sm
 
 # Copy application code
@@ -24,5 +23,9 @@ COPY . .
 # Set Python path
 ENV PYTHONPATH=/app
 
-# Default command - run the main workflow
-CMD ["python", "main.py"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD python -c "import src.agents.monitor_agent; print('OK')" || exit 1
+
+# Default command - run help to show available commands
+CMD ["python", "main.py", "--help"]

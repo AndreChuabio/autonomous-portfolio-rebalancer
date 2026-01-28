@@ -22,11 +22,10 @@ build/
 *.swp
 *.swo
 
-# Testing
+# Testing artifacts (but keep test files)
 .pytest_cache/
 .coverage
 htmlcov/
-test_*.py
 
 # Docker
 Dockerfile
