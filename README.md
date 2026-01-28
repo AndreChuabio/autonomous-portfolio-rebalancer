@@ -52,27 +52,22 @@ The system implements a three-phase agentic workflow:
 ## Project Structure
 
 ```
-finance-agentic-workflow/
+autonomous-portfolio-rebalancer/
 ├── main.py                     # CLI entry point
+├── pytest.ini                  # Test configuration
 ├── requirements.txt            # Python dependencies
+├── .github/
+│   └── workflows/             # CI/CD pipelines
 ├── config/
 │   └── settings.py            # Configuration and thresholds
+├── docs/                      # Documentation
+├── examples/                  # Example outputs
 ├── src/
-│   ├── agents/
-│   │   ├── monitor_agent.py   # Phase 1: Situation assessment
-│   │   ├── analyzer_agent.py  # Phase 2: Scenario evaluation
-│   │   └── decision_agent.py  # Phase 3: Autonomous decision
-│   ├── workflows/
-│   │   └── rebalance_workflow.py  # Orchestrates 3-phase workflow
-│   ├── models/
-│   │   ├── portfolio.py       # Portfolio data models
-│   │   └── decision.py        # Decision tracking models
-│   └── utils/
-│       ├── mcp_client.py      # MCP tool wrappers
-│       └── calculations.py    # Weight drift, risk calculations
-└── .github/
-    └── prompts/
-        └── rebalancing-agent.prompt.md  # System prompt
+│   ├── agents/               # Agent implementations
+│   ├── workflows/            # Orchestration logic
+│   ├── models/               # Data models
+│   └── utils/                # Utilities and calculations
+└── tests/                    # Test suite
 ```
 
 ## Quick Start
@@ -213,69 +208,6 @@ The system dynamically adjusts rebalancing thresholds:
 
 ## Example Output
 
-```
-===============================================================
-AUTONOMOUS REBALANCING AGENT: PORT_A_TechGrowth
-Cycle: 2024-12-12 14:30:00 | Portfolio Basis: $1,000,000
-===============================================================
-
-[PHASE 1: MONITOR AGENT] 
-Status: TRIGGERED
-Trigger Reason: Max drift 4.2% exceeds 3% threshold + VaR declining
-
-Portfolio Snapshot:
-- Max Position Drift: 4.2% (AAPL)
-- Max Sector Drift: 3.1% (Technology)
-- VaR_95: -1.8%
-- Sharpe: 2.1
-- Market Regime: MODERATE
-
-Monitor Decision: → TRIGGER ANALYZER AGENT
-
----
-
-[PHASE 2: ANALYZER AGENT]
-Evaluating scenarios...
-Full Rebalance: 8 trades, $45,000, Score: 6.2/10
-Partial Rebalance: 4 trades, $16,700, Score: 8.5/10
-Sector Rebalance: 3 trades, $12,000, Score: 5.8/10
-Defer: 0 trades, Score: 3.0/10
-
-Recommended: PARTIAL_REBALANCE (Confidence: 82%)
-
----
-
-[PHASE 3: DECISION AGENT]
-Autonomous Decision: EXECUTE SCENARIO 2 - PARTIAL REBALANCE
-
-Reasoning:
-- Max drift (4.2%) exceeds critical threshold (3%)
-- Market regime is MODERATE (favorable for rebalancing)
-- Last rebalance was 7 days ago (sufficient time gap)
-- Partial rebalance optimal: correct worst offenders, minimize turnover
-
-Execution Plan:
-Priority  | Ticker | Action | Shares |      Value | Rationale
----------------------------------------------------------------
-CRITICAL  | AAPL   | SELL   |     25 |   -$4,500  | 4.2% overweight
-HIGH      | NVDA   | BUY    |     12 |   +$5,100  | 3.1% underweight
-HIGH      | XLE    | BUY    |     50 |   +$4,200  | Energy sector drift
-MEDIUM    | QQQ    | SELL   |      8 |   -$2,900  | Benchmark rebalance
-
-Timing: EXECUTE IMMEDIATELY (market conditions favorable)
-Total: 4 trades, $16,700 turnover (1.67% of portfolio)
-
-Adaptive Adjustments:
-- Increased threshold to 3.5% for next 3 days (prevent overtrading)
-- Monitoring NVDA closely (high beta, volatile)
-
-===============================================================
-AGENT STATUS: DECISION FINALIZED - AWAITING EXECUTION
-===============================================================
-```
-
-## Example Output
-
 Sample workflow execution showing the 3-phase decision process:
 
 ```
@@ -284,9 +216,7 @@ Sample workflow execution showing the 3-phase decision process:
 [PHASE 3: DECISION] → Execute 4 trades, $16.7K turnover (1.67%)
 ```
 
-See [examples/EXAMPLE_OUTPUT.md](examples/EXAMPLE_OUTPUT.md) for detailed workflow output examples.
-
-See [docs/](docs/) for detailed architecture and technical specifications.
+See [examples/EXAMPLE_OUTPUT.md](examples/EXAMPLE_OUTPUT.md) for detailed workflow output with full decision reasoning, trade plans, and risk analysis.
 
 ## Tech Stack
 
