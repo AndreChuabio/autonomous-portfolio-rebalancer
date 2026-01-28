@@ -284,3 +284,4 @@ LinkedIn: https://linkedin.com/in/andrechuabio
 ---
 
 Built as a demonstration of autonomous agent architecture, real-time financial data integration, and risk-aware decision-making systems.
+
