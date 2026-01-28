@@ -1,21 +1,26 @@
 # Autonomous Portfolio Rebalancing Agent
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![CI](https://github.com/AndreChuabio/autonomous-portfolio-rebalancer/workflows/CI/badge.svg)](https://github.com/AndreChuabio/autonomous-portfolio-rebalancer/actions)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![MCP](https://img.shields.io/badge/MCP-yfinance-orange.svg)](https://github.com/modelcontextprotocol)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 > An intelligent, multi-agent system for autonomous portfolio rebalancing
 
-A production-ready agentic workflow that monitors portfolio drift in real-time, evaluates multiple rebalancing scenarios, and makes autonomous trading decisions based on market conditions and risk metrics. Built with a 3-phase architecture (Monitor → Analyze → Decide) that mimics human portfolio management decision-making.
+A proof-of-concept agentic workflow that monitors portfolio drift, evaluates multiple rebalancing scenarios, and makes autonomous trading decisions based on market conditions and risk metrics. Built with a 3-phase architecture (Monitor → Analyze → Decide) that mimics human portfolio management decision-making.
+
+**Status**: Active Development - Portfolio Project
 
 ## Key Features
 
-- Autonomous Decision-Making: Makes real trading decisions, not just recommendations
-- Real-Time Market Integration: MongoDB portfolio data + live yfinance prices
-- Multi-Scenario Evaluation: Compares 4+ rebalancing strategies with risk scoring
-- Adaptive Thresholds: Dynamically adjusts based on market regime and volatility
-- Zero Human Intervention: Continuous 24/7 monitoring and execution
-- Risk-Aware: VaR, Sharpe ratio, beta analysis integrated into decision logic
+- **Autonomous Decision-Making**: Makes trading decisions, not just recommendations
+- **Real-Time Market Integration**: MongoDB portfolio data + live yfinance prices via MCP
+- **Multi-Scenario Evaluation**: Compares 4 rebalancing strategies with risk scoring
+- **Adaptive Thresholds**: Dynamically adjusts based on market regime and volatility
+- **Risk-Aware**: VaR, Sharpe ratio, beta analysis integrated into decision logic
+- **Sentiment Analysis**: FinBERT-powered news analysis for context-aware decisions
+- **Comprehensive Testing**: Full pytest suite with unit and integration tests
+- **CI/CD Pipeline**: Automated testing and code quality checks via GitHub Actions
 
 ## Architecture
 
@@ -269,33 +274,67 @@ AGENT STATUS: DECISION FINALIZED - AWAITING EXECUTION
 ===============================================================
 ```
 
-## Real-World Performance
+## Example Output
 
-Example Decision (Dec 12, 2024):
-- Detected 5.2% portfolio drift (NVDA/META overweight from market gains)
-- Evaluated 4 scenarios with risk-adjusted scoring
-- Autonomous Decision: Execute full rebalance
-- Trade Plan: 9 trades, $138K turnover (13.8%)
-- Expected Outcome: Lock in +96% NVDA gains, restore 55/12/33 sector allocation
-- Risk Metrics: Sharpe 3.48, VaR -0.93%, Beta 1.23
+Sample workflow execution showing the 3-phase decision process:
+
+```
+[PHASE 1: MONITOR] → Detected 4.2% drift (AAPL overweight)
+[PHASE 2: ANALYZER] → Evaluated 4 scenarios, recommended partial rebalance
+[PHASE 3: DECISION] → Execute 4 trades, $16.7K turnover (1.67%)
+```
+
+See [examples/EXAMPLE_OUTPUT.md](examples/EXAMPLE_OUTPUT.md) for detailed workflow output examples.
+
+See [docs/](docs/) for detailed architecture and technical specifications.
 
 ## Tech Stack
 
-- Languages: Python 3.10+
-- Data: MongoDB (portfolio history), yfinance (live prices)
-- Architecture: Multi-agent system with autonomous decision-making
-- Tools: MCP (Model Context Protocol) for data integration
-- Risk Analysis: NumPy, Pandas for quantitative calculations
+- **Languages**: Python 3.10+
+- **Data**: MongoDB (portfolio history), yfinance (live prices via MCP)
+- **ML/AI**: FinBERT (sentiment analysis), spaCy (NLP)
+- **Architecture**: Multi-agent system with autonomous decision-making
+- **Testing**: pytest, pytest-cov, pytest-mock
+- **CI/CD**: GitHub Actions
+- **Containerization**: Docker, Docker Compose
+- **Risk Analysis**: NumPy, Pandas for quantitative calculations
 
-## Future Enhancements
+## Development Roadmap
 
-- Continuous monitoring mode with scheduled cycles
-- Automatic trade execution via paper trading MCP
-- Machine learning for regret score calculation
-- Multi-portfolio support
-- Real-time alert notifications
-- Performance attribution analysis
-- Tax-loss harvesting integration
+- [ ] Continuous monitoring mode with scheduled cycles
+- [ ] Live trade execution integration
+- [ ] Machine learning for regret score calculation
+- [ ] Multi-portfolio support
+- [ ] Real-time alert notifications (Slack/email)
+- [ ] Performance attribution analysis
+- [ ] Tax-loss harvesting integration
+- [ ] Backtesting framework with historical data
+
+## Testing
+
+Run the test suite:
+
+```bash
+# Install test dependencies
+pip install -r requirements.txt
+
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=src --cov-report=html
+
+# Run specific test file
+pytest tests/test_agents.py -v
+```
+
+## Documentation
+
+- [Sentiment Analysis](docs/SENTIMENT.md) - AI-powered news analysis
+- [Architecture Details](docs/SENTIMENT_ARCHITECTURE.md) - System design
+- [Technical Specification](docs/SENTIMENT_TECHNICAL_SPEC.md) - FinBERT methodology
+- [Implementation Notes](docs/IMPLEMENTATION.md) - Development history
+- [Docker Setup](DOCKER.md) - Containerization guide
 
 ## Contributing
 
