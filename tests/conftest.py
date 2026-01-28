@@ -2,10 +2,13 @@
 Pytest configuration and shared fixtures.
 """
 
-import pytest
 from datetime import datetime
+
+import pytest
+
+from src.models.decision import (Decision, DecisionStatus, Scenario,
+                                 ScenarioType, Trade)
 from src.models.portfolio import Portfolio, Position, RiskMetrics
-from src.models.decision import Decision, Scenario, Trade, ScenarioType, DecisionStatus
 
 
 @pytest.fixture

@@ -6,25 +6,18 @@ Continuously tracks portfolio drift and decides when deeper analysis is needed.
 from datetime import datetime, timedelta
 from typing import Dict, Optional
 
+from config.settings import (DRIFT_THRESHOLD_CRITICAL, PORTFOLIO_BASIS,
+                             SECTOR_ALLOCATION, SECTOR_MAPPING,
+                             SHARPE_THRESHOLD_WARNING, TARGET_ALLOCATION,
+                             VAR_THRESHOLD_WARNING)
+from src.models.decision import DecisionStatus, MonitorResult
 from src.models.portfolio import Portfolio, Position, RiskMetrics
-from src.models.decision import MonitorResult, DecisionStatus
+from src.utils.calculations import (calculate_implied_weights,
+                                    calculate_sector_drift,
+                                    calculate_sector_weights,
+                                    calculate_weight_drift,
+                                    classify_market_regime)
 from src.utils.mcp_client import MCPClient
-from src.utils.calculations import (
-    calculate_implied_weights,
-    calculate_weight_drift,
-    calculate_sector_weights,
-    calculate_sector_drift,
-    classify_market_regime,
-)
-from config.settings import (
-    TARGET_ALLOCATION,
-    SECTOR_ALLOCATION,
-    SECTOR_MAPPING,
-    PORTFOLIO_BASIS,
-    DRIFT_THRESHOLD_CRITICAL,
-    VAR_THRESHOLD_WARNING,
-    SHARPE_THRESHOLD_WARNING,
-)
 
 
 class MonitorAgent:

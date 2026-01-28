@@ -12,13 +12,14 @@ Technical Approach:
 - Hybrid scoring: 70% FinBERT + 30% keyword adjustment
 """
 
-from typing import Dict, List, Optional, Any
+import logging
 from dataclasses import dataclass
 from datetime import datetime
-import torch
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from typing import Any, Dict, List, Optional
+
 import spacy
-import logging
+import torch
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 logger = logging.getLogger(__name__)
 

@@ -5,12 +5,12 @@ Queries Neo4j via MCP to explain WHY positions are being rebalanced based on
 recent sentiment and news events.
 """
 
-from typing import Dict, List, Optional
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from typing import Dict, List, Optional
 
-from src.utils.mcp_client import MCPClient
 from src.models.portfolio import Position
+from src.utils.mcp_client import MCPClient
 
 
 @dataclass

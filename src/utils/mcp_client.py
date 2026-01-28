@@ -4,9 +4,9 @@ MCP Client wrappers for interacting with yfinance MCP server.
 PRODUCTION IMPLEMENTATION - Makes real calls to MCP yfinance server.
 """
 
-from typing import Dict, List, Optional, Any
 import json
 from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 
 class MCPClient:

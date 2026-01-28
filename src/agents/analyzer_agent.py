@@ -3,27 +3,17 @@ Analyzer Agent - Phase 2: Scenario Evaluation
 Evaluates multiple rebalancing scenarios and compares trade-offs.
 """
 
-from typing import List, Dict
 from datetime import datetime
+from typing import Dict, List
 
+from config.settings import (DRIFT_THRESHOLD_CRITICAL, DRIFT_THRESHOLD_HIGH,
+                             DRIFT_THRESHOLD_MEDIUM, MAX_TURNOVER_RATIO,
+                             PORTFOLIO_BASIS, TARGET_ALLOCATION)
+from src.models.decision import (AnalyzerResult, MonitorResult, Scenario,
+                                 ScenarioType, Trade)
 from src.models.portfolio import Portfolio, Position
-from src.models.decision import (
-    Scenario,
-    ScenarioType,
-    Trade,
-    AnalyzerResult,
-    MonitorResult,
-)
-from src.utils.mcp_client import MCPClient
 from src.utils.calculations import calculate_rebalancing_trades
-from config.settings import (
-    TARGET_ALLOCATION,
-    PORTFOLIO_BASIS,
-    DRIFT_THRESHOLD_CRITICAL,
-    DRIFT_THRESHOLD_HIGH,
-    DRIFT_THRESHOLD_MEDIUM,
-    MAX_TURNOVER_RATIO,
-)
+from src.utils.mcp_client import MCPClient
 
 
 class AnalyzerAgent:

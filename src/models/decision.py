@@ -3,9 +3,9 @@ Data models for decision tracking and scenarios.
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
 from datetime import datetime
 from enum import Enum
+from typing import Dict, List, Optional
 
 
 class DecisionStatus(Enum):

@@ -3,13 +3,12 @@ Unit tests for calculation utilities.
 """
 
 import pytest
-from src.utils.calculations import (
-    calculate_weight_drift,
-    calculate_sector_weights,
-    calculate_implied_weights,
-    calculate_rebalancing_trades,
-)
-from config.settings import TARGET_ALLOCATION, SECTOR_MAPPING
+
+from config.settings import SECTOR_MAPPING, TARGET_ALLOCATION
+from src.utils.calculations import (calculate_implied_weights,
+                                    calculate_rebalancing_trades,
+                                    calculate_sector_weights,
+                                    calculate_weight_drift)
 
 
 class TestWeightDrift:

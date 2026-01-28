@@ -3,7 +3,9 @@ Calculation utilities for portfolio analysis.
 """
 
 from typing import Dict, List, Tuple
-from config.settings import TARGET_ALLOCATION, SECTOR_MAPPING, SECTOR_ALLOCATION
+
+from config.settings import (SECTOR_ALLOCATION, SECTOR_MAPPING,
+                             TARGET_ALLOCATION)
 
 
 def calculate_weight_drift(
