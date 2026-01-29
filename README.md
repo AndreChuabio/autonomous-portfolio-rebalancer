@@ -1,9 +1,7 @@
 # Autonomous Portfolio Rebalancing Agent
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![CI](https://github.com/AndreChuabio/autonomous-portfolio-rebalancer/workflows/CI/badge.svg)](https://github.com/AndreChuabio/autonomous-portfolio-rebalancer/actions)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 > An intelligent, multi-agent system for autonomous portfolio rebalancing
 
@@ -20,7 +18,6 @@ A proof-of-concept agentic workflow that monitors portfolio drift, evaluates mul
 - **Risk-Aware**: VaR, Sharpe ratio, beta analysis integrated into decision logic
 - **Sentiment Analysis**: FinBERT-powered news analysis for context-aware decisions
 - **Comprehensive Testing**: Full pytest suite with unit and integration tests
-- **CI/CD Pipeline**: Automated testing and code quality checks via GitHub Actions
 
 ## Architecture
 
@@ -225,7 +222,6 @@ See [examples/EXAMPLE_OUTPUT.md](examples/EXAMPLE_OUTPUT.md) for detailed workfl
 - **ML/AI**: FinBERT (sentiment analysis), spaCy (NLP)
 - **Architecture**: Multi-agent system with autonomous decision-making
 - **Testing**: pytest, pytest-cov, pytest-mock
-- **CI/CD**: GitHub Actions
 - **Containerization**: Docker, Docker Compose
 - **Risk Analysis**: NumPy, Pandas for quantitative calculations
 
