@@ -79,8 +79,8 @@ autonomous-portfolio-rebalancer/
 
 ```bash
 # Clone the repository
-git clone https://github.com/AndreChuabio/finance-agentic-workflow.git
-cd finance-agentic-workflow
+git clone https://github.com/AndreChuabio/autonomous-portfolio-rebalancer.git
+cd autonomous-portfolio-rebalancer
 
 # Install dependencies
 pip install -r requirements.txt
